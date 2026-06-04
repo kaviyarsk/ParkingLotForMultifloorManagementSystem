@@ -1,8 +1,6 @@
 package com.parkinglot.pricing;
-
 import com.parkinglot.model.Ticket;
 import com.parkinglot.model.VehicleType;
-
 public class TimeBasedPricing implements PricingStrategy {
 
     @Override
@@ -29,7 +27,6 @@ public class TimeBasedPricing implements PricingStrategy {
             System.out.println("[SYSTEM WARNING] Unknown vehicle type. Using fallback base rate.");
         }
         
-        // 4. Return total calculated cost
         return hours * hourlyRate;
     }
     @Override

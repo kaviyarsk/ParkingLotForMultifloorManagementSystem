@@ -10,9 +10,12 @@ public class Ticket {
     private Timestamp entryTime;
     private Timestamp exitTime;
     private double amountPaid;
+    private String pricingStrategy;
 
     private int floorNumber;
     private int spotNumber;
+    private String vehicleType;
+    private String paymentType;
 
     public Ticket(String vehicleNumber, int parkingSpotId) {
         this.vehicleNumber = vehicleNumber;
@@ -20,7 +23,8 @@ public class Ticket {
     }
 
     public Ticket(int ticketId, int dailyTicketSeq, int parkingSpotId, String vehicleNumber, 
-        Timestamp entryTime, Timestamp exitTime, double amountPaid,int floorNumber,int spotNumber) {
+        Timestamp entryTime, Timestamp exitTime, double amountPaid, String pricingStrategy, 
+        int floorNumber,int spotNumber, String vehicleType, String paymentType) {
         this.ticketId = ticketId;
         this.dailyTicketSeq=dailyTicketSeq;     
         this.parkingSpotId = parkingSpotId;
@@ -28,8 +32,11 @@ public class Ticket {
         this.entryTime = entryTime;
         this.exitTime = exitTime;
         this.amountPaid = amountPaid;
+        this.pricingStrategy = pricingStrategy;
         this.floorNumber = floorNumber;
         this.spotNumber = spotNumber;
+        this.vehicleType = vehicleType;
+        this.paymentType = paymentType;
     }
 
     
@@ -54,11 +61,18 @@ public class Ticket {
     public double getAmountPaid() { return amountPaid; }
     public void setAmountPaid(double amountPaid) { this.amountPaid = amountPaid; }
 
+    public String getPricingStrategy() { return pricingStrategy; }
+    public void setPricingStrategy(String pricingStrategy) { this.pricingStrategy = pricingStrategy; }
+    
     public int getFloorNumber() { return floorNumber; }
     public void setFloorNumber(int floorNumber) { this.floorNumber = floorNumber; }
 
     public int getSpotNumber() { return spotNumber; }
     public void setSpotNumber(int spotNumber) { this.spotNumber = spotNumber; }
 
-    
+    public String getVehicleType() { return vehicleType; }
+    public void setVehicleType(String vehicleType) { this.vehicleType=vehicleType; }
+
+    public String getPaymentType() { return paymentType; }
+    public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
 }

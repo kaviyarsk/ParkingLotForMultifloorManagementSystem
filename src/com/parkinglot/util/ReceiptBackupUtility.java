@@ -5,16 +5,23 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class ReceiptBackupUtility {
     private static final String DIRECTORY_PATH = "records";
     private static final String FILE_PATH = "records/receipts.txt";
-
-    public static void saveReceiptToFile(Ticket ticket, String maskedTicketId, String rateType, double amount, String paymentMode) {
+    
+    private static final SimpleDateFormat CUSTOM_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat TOKEN_FORMATTER = new SimpleDateFormat("HHmmss");
+    
+    public static SimpleDateFormat getCustomFormatter() {
+        return CUSTOM_FORMATTER;
+    }
+    public static void saveReceiptToFile(Ticket ticket, String TicketId, String rateType, double amount, String paymentMode) {
         try {
-            // Ensure the 'records' directory exists on your computer
             File directory = new File(DIRECTORY_PATH);
             if (!directory.exists()) {
                 directory.mkdirs(); 
@@ -23,15 +30,13 @@ public class ReceiptBackupUtility {
             try (FileWriter fw = new FileWriter(FILE_PATH, true);
                  PrintWriter pw = new PrintWriter(fw)) {
 
-                // Format current system timestamp for audit logs
-                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                String timestamp = CUSTOM_FORMATTER.format(new Date());
 
-                // Write structured receipt text blocks
                 pw.println("========================================");
                 pw.println("         OFFLINE TRANSACTION LOG        ");
                 pw.println("========================================");
                 pw.println(" Process Time : " + timestamp);
-                pw.println(" Ticket ID    : " + maskedTicketId);
+                pw.println(" Ticket ID    : " + TicketId);
                 pw.println(" Vehicle No   : " + ticket.getVehicleNumber());
                 pw.println(" Location Info: Floor " + ticket.getFloorNumber() + " | Spot #" + ticket.getSpotNumber());
                 pw.println(" Rate Type    : " + rateType);
@@ -44,7 +49,7 @@ public class ReceiptBackupUtility {
         }
     }
 
-    public static void generateCheckInReceipt(Ticket ticket, String maskedTicketId,int floor, int spotNum) {
+    public static void generateCheckInReceipt(Ticket ticket, String TicketId,int floor, int spotNum) {
         try {
             File directory = new File("records");
             if (!directory.exists()) {
@@ -52,22 +57,20 @@ public class ReceiptBackupUtility {
             }
 
             // Create a unique entry ticket file name using the vehicle number and a timestamp token
-            String fileTimeToken = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+            String fileTimeToken = TOKEN_FORMATTER.format(new Date());
             String ticketFileName =  "records/ticket_" + ticket.getVehicleNumber() + "_" + fileTimeToken + ".txt";
 
             // Open a new file to save this specific entry ticket
             try (FileWriter fw = new FileWriter(ticketFileName);
                  PrintWriter pw = new PrintWriter(fw)) {
-
-                String displayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-                // Print a clean, customer-facing parking ticket layout
+                
+                String displayTime = CUSTOM_FORMATTER.format(new Date());
                 pw.println("========================================");
                 pw.println("       ENTERPRISE PARKING LOT          ");
                 pw.println("          PARKING TICKET               ");
                 pw.println("========================================");
                 pw.println(" Date & Entry Time: " + displayTime);
-                pw.println(" Ticket ID        : #" + maskedTicketId);
+                pw.println(" Ticket ID        : #" + TicketId);
                 pw.println(" Vehicle No       : " + ticket.getVehicleNumber());
                 pw.println("----------------------------------------");
                 pw.println(" ASSIGNED SLOT    : ");
@@ -87,31 +90,29 @@ public class ReceiptBackupUtility {
         }
     }
 
-    public static void generateCustomerReceipt(Ticket ticket, String maskedTicketId, String rateType, double amount, String paymentMode) {
+    public static void generateCustomerReceipt(Ticket ticket, String TicketId, String rateType, double amount, String paymentMode) {
         try {
             File directory = new File(DIRECTORY_PATH);
             if (!directory.exists()) {
                 directory.mkdirs();
             }
 
-            // Create a dynamic file name using vehicle number and short time token
             String fileTimeToken = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
             String customerFileName = DIRECTORY_PATH + "/receipt_" + ticket.getVehicleNumber() + "_" + fileTimeToken + ".txt";
-
-            // Open a brand new file (Notice: append flag is left out so it's a fresh file for this customer)
             try (FileWriter fw = new FileWriter(customerFileName);
                  PrintWriter pw = new PrintWriter(fw)) {
+                
+                String formattedEntry = CUSTOM_FORMATTER.format(ticket.getEntryTime());
+                String formattedExit = CUSTOM_FORMATTER.format(new Date());
 
-                String displayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-                // Print a beautiful customer-facing invoice receipt
                 pw.println("========================================");
                 pw.println("       ENTERPRISE PARKING RECEIPT       ");
                 pw.println("========================================");
-                pw.println(" Date & Time  : " + displayTime);
-                pw.println(" Invoice ID   : #" + maskedTicketId);
-                pw.println(" Vehicle No   : " + ticket.getVehicleNumber());
-                pw.println(" Assigned Slot: Floor " + ticket.getFloorNumber() + " | Spot #" + ticket.getSpotNumber());
+                pw.println(" Check-In Time  : "+ formattedEntry);
+                pw.println(" Check-Out Time : " + formattedExit);
+                pw.println(" Invoice ID     : #" + TicketId);
+                pw.println(" Vehicle No     : " + ticket.getVehicleNumber());
+                pw.println(" Assigned Slot : Floor " + ticket.getFloorNumber() + " | Spot #" + ticket.getSpotNumber());
                 pw.println("----------------------------------------");
                 pw.println(" Pricing based on  : " + rateType);
                 pw.printf(" Payment Mode : %s\n", paymentMode);

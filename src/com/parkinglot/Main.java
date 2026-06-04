@@ -1,8 +1,6 @@
 package com.parkinglot;
 
 import com.parkinglot.model.VehicleType;
-import com.parkinglot.pricing.EventPricing;
-import com.parkinglot.pricing.TimeBasedPricing;
 import com.parkinglot.service.ParkingService;
 import java.util.Scanner;
 
@@ -21,8 +19,8 @@ public class Main {
             System.out.println("1. Park a Vehicle (Check-In)");
             System.out.println("2. Unpark a Vehicle (Check-Out)");
             System.out.println("3. View Live Occupancy Dashboard");
-            System.out.println("4. Switch to Event Pricing (Holiday Flat Rate)");
-            System.out.println("5. Switch to Standard Pricing (Hourly Rates)");
+            System.out.println("4. Switch to Event Pricing");
+            System.out.println("5. Switch to Standard Hour Pricing");
             
             System.out.println("6. Exit System Application");
             System.out.print("Please select an option (1-6): ");
@@ -31,8 +29,19 @@ public class Main {
             
             switch (inputChoice) {
                 case "1":
-                    System.out.print("\nEnter Vehicle License Plate Number: ");
-                    String vehicleNumber = scanner.nextLine().trim().toUpperCase();
+                    String vehicleNumber = "";
+                    String platePattern = "^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$";
+                    while (true) {
+                        System.out.print("Enter Vehicle License Plate : ");
+                        vehicleNumber = scanner.nextLine().trim().toUpperCase(); 
+
+                        if (vehicleNumber.matches(platePattern)) {
+                            break; 
+                        } else {
+                            System.out.println("[ERROR] Invalid Plate Format! Expected format: 2 Letters, 2 Digits, 2 Letters, 4 Digits.");
+                            System.out.println("Example: TN38AB1707");
+                        }
+                    }
 
                     System.out.print("Enter Vehicle Type (CAR / BIKE / AUTO / TRUCK): ");
                     String vehicleType = scanner.nextLine().trim().toUpperCase();
@@ -46,23 +55,45 @@ public class Main {
                     break;
 
                 case "2":
-                    System.out.print("\nEnter Ticket ID to process checkout: ");
-                    String maskedTicketId = scanner.nextLine().trim();
-                    parkingService.unparkVehicle(maskedTicketId);
+                    try {
+                        System.out.println("\n--- VEHICLE CHECK-OUT VERIFICATION ---");
+                        
+                        String plateInput = "";
+                        String platePattern1 = "^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$";
+        
+                        while (true) {
+                            System.out.print("Enter Vehicle License Plate Number: ");
+                            plateInput = scanner.nextLine().trim().toUpperCase();
+
+                            if (plateInput.matches(platePattern1)) {
+                                break; 
+                            } else {
+                                System.out.println("[ERROR] Invalid Plate Format! Expected: 2 Letters, 2 Digits, 2 Letters, 4 Digits.");
+                            }
+                    }
+        
+                        parkingService.unparkVehicle(plateInput);
+        
+                    } catch (java.util.InputMismatchException e) {
+                        System.out.println("\n[ERROR] Input type mismatch detected! Returning to main menu...");
+                        scanner.nextLine(); 
+                    } catch (Exception e) {
+                        System.out.println("\n[ERROR] Something went wrong during check-out processing.");
+                        scanner.nextLine(); 
+                    }
                     break;
                 case "3":
-                    // Clear terminal layout view and pull live dashboard metrics
                     parkingService.showOccupancyDashboard();
                     break;
 
                 case "4":
-                    parkingService.setPricingStrategy(new EventPricing());
-                    System.out.println("\n[SYSTEM] Switched successfully to Holiday Flat Rate Event Pricing.");
+                    parkingService.setPricingStrategy(new com.parkinglot.pricing.EventPricing());
+                    System.out.println("\n[SYSTEM] Switched successfully to Event Pricing.");
                     break;
 
                 case "5":
-                    parkingService.setPricingStrategy(new TimeBasedPricing());
-                    System.out.println("\n[SYSTEM] Switched successfully back to Hourly Standard Pricing.");
+                    parkingService.setPricingStrategy(new com.parkinglot.pricing.TimeBasedPricing());
+                    System.out.println("\n[SYSTEM] Switched successfully to Hourly Standard Pricing.");
                     break;
 
                 case "6":
@@ -71,7 +102,7 @@ public class Main {
                     break;
 
                 default:
-                    System.out.println("\n[INVALID] Selection invalid. Please type a valid choice from 1 to 5.");
+                    System.out.println("\n[INVALID] Selection invalid. Please type a valid choice from 1 to 6.");
                     break;
             }
         }

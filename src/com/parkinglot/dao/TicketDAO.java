@@ -34,16 +34,16 @@ public class TicketDAO {
     public boolean saveTicket(Ticket ticket) {
         int nextSeq = getNextDailySequence();
         ticket.setDailyTicketSeq(nextSeq);
-        String query = "INSERT INTO tickets (daily_ticket_seq, parking_spot_id, vehicle_number) " +
-                   "VALUES (?, ?, ?)";     
+        String query = "INSERT INTO tickets (daily_ticket_seq, parking_spot_id, vehicle_number, pricing_strategy) " +
+                   "VALUES (?, ?, ?, ?)";     
     
         try (Connection conn = DBConfig.getConnection();
             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
         
-            ps.setInt(1, ticket.getDailyTicketSeq());   // Maps to placeholder 1 (daily_ticket_seq)
-            ps.setInt(2, ticket.getParkingSpotId());           // Maps to placeholder 3 (spot_number)
-            ps.setString(3, ticket.getVehicleNumber()); // Maps to placeholder 4 (vehicle_number)
-           
+            ps.setInt(1, ticket.getDailyTicketSeq());   
+            ps.setInt(2, ticket.getParkingSpotId());           
+            ps.setString(3, ticket.getVehicleNumber());
+            ps.setString(4, ticket.getPricingStrategy());
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -59,16 +59,16 @@ public class TicketDAO {
         return false;
     }
 
-    public Ticket getActiveTicketByDailySequence(int dailySeq) {
+    public Ticket getActiveTicketByPlate(String vehicleNumber) {
         String query = "SELECT t.ticket_id, t.daily_ticket_seq, t.parking_spot_id, t.vehicle_number, " +
-                       "t.entry_time, t.exit_time, t.amount_paid, p.floor_number, p.spot_number " +
+                       "t.entry_time, t.exit_time, t.amount_paid,t.pricing_strategy, p.floor_number, p.spot_number, p.spot_type,t.payment_type " +
                        "FROM tickets t JOIN parking_spots p ON t.parking_spot_id = p.parking_spot_id " +
-                       "WHERE t.daily_ticket_seq = ? AND t.exit_time IS NULL";
+                       "WHERE t.vehicle_number = UPPER(?) AND t.exit_time IS NULL";
 
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             
-            ps.setInt(1, dailySeq);
+            ps.setString(1, vehicleNumber.trim());
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
@@ -80,11 +80,15 @@ public class TicketDAO {
                     rs.getTimestamp("entry_time"),
                     rs.getTimestamp("exit_time"),
                     rs.getDouble("amount_paid"),
+                    rs.getString("pricing_strategy"),
                     rs.getInt("floor_number"),
-                    rs.getInt("spot_number")
+                    rs.getInt("spot_number"),
+                    rs.getString("spot_type"),
+                    rs.getString("payment_type")
                 );
             }
         } catch (SQLException e) {
+            System.err.println("[ERROR] Failed to fetch active ticket with provided sequence and license plate.");
             e.printStackTrace();
         }
         return null;
@@ -105,15 +109,24 @@ public class TicketDAO {
         return false;
     }
 
-    public void closeTicket(int ticketId, double amount) {
-        String query = "UPDATE tickets SET exit_time = CURRENT_TIMESTAMP, amount_paid = ? WHERE ticket_id = ?";
+    public void closeTicket(int ticketId, double amount, String paymentType) {
+        String query = "UPDATE tickets SET exit_time = CURRENT_TIMESTAMP(), amount_paid = ?, payment_type = ? WHERE ticket_id = ?";
         try (Connection conn = DBConfig.getConnection();
             PreparedStatement ps = conn.prepareStatement(query)) {
         
             ps.setDouble(1, amount);
-            ps.setInt(2, ticketId);        
-            ps.executeUpdate();
+            ps.setString(2, paymentType);
+            ps.setInt(3, ticketId);        
+            int rowsUpdated = ps.executeUpdate();
+        
+            if (rowsUpdated > 0) {
+                System.out.println("[DATABASE] Ticket record successfully finalized in MySQL database.");
+            } else {
+                System.err.println("[WARN] No ticket records found matching ticket_id: " + ticketId);
+            }
+        
         } catch (SQLException e) {
+            System.err.println("[ERROR] Failed to execute closeTicket update transaction.");
             e.printStackTrace();
         }
     }
