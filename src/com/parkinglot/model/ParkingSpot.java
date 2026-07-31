@@ -15,8 +15,6 @@ public class ParkingSpot {
         this.isAvailable = isAvailable;
     }
 
-
-    // Getters and Setters
     public int getParkingSpotId() {
         return parkingSpotId;
     }
