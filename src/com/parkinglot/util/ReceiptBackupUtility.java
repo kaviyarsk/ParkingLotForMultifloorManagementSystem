@@ -41,7 +41,7 @@ public class ReceiptBackupUtility {
                 pw.println(" Location Info: Floor " + ticket.getFloorNumber() + " | Spot #" + ticket.getSpotNumber());
                 pw.println(" Rate Type    : " + rateType);
                 pw.printf(" Settled Cost : Rs.%.2f via %s\n", amount, paymentMode);
-                pw.println("========================================\n"); // Extra spacing line
+                pw.println("========================================\n"); 
                 
             }
         } catch (IOException e) {
@@ -55,12 +55,9 @@ public class ReceiptBackupUtility {
             if (!directory.exists()) {
                 directory.mkdirs();
             }
-
-            // Create a unique entry ticket file name using the vehicle number and a timestamp token
             String fileTimeToken = TOKEN_FORMATTER.format(new Date());
             String ticketFileName =  "records/ticket_" + ticket.getVehicleNumber() + "_" + fileTimeToken + ".txt";
 
-            // Open a new file to save this specific entry ticket
             try (FileWriter fw = new FileWriter(ticketFileName);
                  PrintWriter pw = new PrintWriter(fw)) {
                 
