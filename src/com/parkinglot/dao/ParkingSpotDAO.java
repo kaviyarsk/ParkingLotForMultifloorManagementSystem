@@ -47,7 +47,7 @@ public class ParkingSpotDAO {
     }
     
     public void displayLiveOccupancyDashboard() {
-        // Aggregation query grouping by floor and vehicle type constraints
+        
         String query = "SELECT floor_number, spot_type, " +
                         "SUM(CASE WHEN is_available = TRUE THEN 1 ELSE 0 END) AS available_spots, " +
                         "SUM(CASE WHEN is_available = FALSE THEN 1 ELSE 0 END) AS occupied_spots " +
