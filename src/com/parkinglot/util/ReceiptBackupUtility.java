@@ -1,5 +1,4 @@
 package com.parkinglot.util;
-
 import com.parkinglot.model.Ticket;
 import java.io.File;
 import java.io.FileWriter;
@@ -12,26 +11,23 @@ import java.util.Date;
 
 public class ReceiptBackupUtility {
     private static final String DIRECTORY_PATH = "records";
-    private static final String FILE_PATH = "records/receipts.txt";
-    
+    private static final String FILE_PATH = "records/receipts.txt"; 
     private static final SimpleDateFormat CUSTOM_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat TOKEN_FORMATTER = new SimpleDateFormat("HHmmss");
     
     public static SimpleDateFormat getCustomFormatter() {
         return CUSTOM_FORMATTER;
     }
+    
     public static void saveReceiptToFile(Ticket ticket, String TicketId, String rateType, double amount, String paymentMode) {
         try {
             File directory = new File(DIRECTORY_PATH);
             if (!directory.exists()) {
                 directory.mkdirs(); 
             }
-
             try (FileWriter fw = new FileWriter(FILE_PATH, true);
                  PrintWriter pw = new PrintWriter(fw)) {
-
                 String timestamp = CUSTOM_FORMATTER.format(new Date());
-
                 pw.println("========================================");
                 pw.println("         OFFLINE TRANSACTION LOG        ");
                 pw.println("========================================");
@@ -41,8 +37,7 @@ public class ReceiptBackupUtility {
                 pw.println(" Location Info: Floor " + ticket.getFloorNumber() + " | Spot #" + ticket.getSpotNumber());
                 pw.println(" Rate Type    : " + rateType);
                 pw.printf(" Settled Cost : Rs.%.2f via %s\n", amount, paymentMode);
-                pw.println("========================================\n"); 
-                
+                pw.println("========================================\n");   
             }
         } catch (IOException e) {
             System.err.println("[SYSTEM WARNING] Failed to write offline receipt backup: " + e.getMessage());
@@ -57,10 +52,8 @@ public class ReceiptBackupUtility {
             }
             String fileTimeToken = TOKEN_FORMATTER.format(new Date());
             String ticketFileName =  "records/ticket_" + ticket.getVehicleNumber() + "_" + fileTimeToken + ".txt";
-
             try (FileWriter fw = new FileWriter(ticketFileName);
                  PrintWriter pw = new PrintWriter(fw)) {
-                
                 String displayTime = CUSTOM_FORMATTER.format(new Date());
                 pw.println("========================================");
                 pw.println("       ENTERPRISE PARKING LOT          ");
@@ -79,7 +72,6 @@ public class ReceiptBackupUtility {
                 pw.println("========================================");
                 pw.println("            HAVE A NICE DAY             ");
                 pw.println("========================================");
-
                 System.out.println("[SYSTEM] Individual customer entry ticket saved to: " + ticketFileName);
             }
         } catch (IOException e) {
@@ -93,15 +85,12 @@ public class ReceiptBackupUtility {
             if (!directory.exists()) {
                 directory.mkdirs();
             }
-
             String fileTimeToken = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
             String customerFileName = DIRECTORY_PATH + "/receipt_" + ticket.getVehicleNumber() + "_" + fileTimeToken + ".txt";
             try (FileWriter fw = new FileWriter(customerFileName);
                  PrintWriter pw = new PrintWriter(fw)) {
-                
                 String formattedEntry = CUSTOM_FORMATTER.format(ticket.getEntryTime());
                 String formattedExit = CUSTOM_FORMATTER.format(new Date());
-
                 pw.println("========================================");
                 pw.println("       ENTERPRISE PARKING RECEIPT       ");
                 pw.println("========================================");
@@ -118,7 +107,6 @@ public class ReceiptBackupUtility {
                 pw.println("========================================");
                 pw.println("       THANK YOU FOR PARKING WITH US!    ");
                 pw.println("========================================");
-                
                 System.out.println("[SYSTEM] Individual customer invoice saved to: " + customerFileName);
             }
         } catch (IOException e) {
