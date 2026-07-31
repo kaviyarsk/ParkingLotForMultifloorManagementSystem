@@ -22,7 +22,7 @@ public class TimeBasedPricing implements PricingStrategy {
         double hourlyRate = 2.0; 
         try {
             VehicleType type = VehicleType.valueOf(vehicleType.toUpperCase());
-            hourlyRate = type.getHourlyRate(); // Pulls the unique rate mapped to the Enum
+            hourlyRate = type.getHourlyRate(); 
         } catch (IllegalArgumentException e) {
             System.out.println("[SYSTEM WARNING] Unknown vehicle type. Using fallback base rate.");
         }
