@@ -144,7 +144,6 @@ public class ParkingService {
                 System.out.printf(" Settled Cost : Rs.%.2f via %s\n", totalFee, paymentModeName);
                 System.out.println("========================================");
 
-                // 4. Local File Backups remain active
                 ReceiptBackupUtility.saveReceiptToFile(ticket, sequenceStr, rateTypeName, totalFee, paymentModeName);
                 ReceiptBackupUtility.generateCustomerReceipt(ticket, sequenceStr, rateTypeName, totalFee, paymentModeName);
             }
