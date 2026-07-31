@@ -22,7 +22,6 @@ public class ParkingService {
 
     private String formatPaymentMode(String rawClassName) {
         if (rawClassName == null) return "Unknown Payment";
-    
         switch (rawClassName) {
             case "CashPayment":
                 return "Cash Payment";
@@ -32,30 +31,23 @@ public class ParkingService {
                 return rawClassName.replaceAll("(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", " ");
         }
     }
+    
     public void parkVehicle(String vehicleNumber, String vehicleType) {
         if (ticketDAO.isVehicleAlreadyParked(vehicleNumber)) {
             System.out.println("\n[DENIED] Vehicle " + vehicleNumber + " is already parked inside!");
             return;
         }
-
         ParkingSpot availableSpot = spotDAO.getAvailableSpot(vehicleType);
-
         if (availableSpot == null) {
             System.out.println("\n[SORRY] No vacant spaces available for type: " + vehicleType);
             return;
         }
-
         spotDAO.updateSpotStatus(availableSpot.getParkingSpotId(), false);
-        
         Ticket newTicket = new Ticket(vehicleNumber, availableSpot.getParkingSpotId());
-        
         String currentActiveStrategy = this.pricingStrategy.getStrategyName();
         newTicket.setPricingStrategy(currentActiveStrategy);
-
         boolean isSaved = ticketDAO.saveTicket(newTicket);
-
         if (isSaved) {
-            
             System.out.println("\n========================================");
             System.out.println("          PARKING TICKET ISSUED         ");
             System.out.println("========================================");
@@ -64,22 +56,17 @@ public class ParkingService {
             System.out.println(" Rate Based On : " + currentActiveStrategy);
             System.out.println(" Location    : Floor " + availableSpot.getFloorNumber() + " | Spot #" + availableSpot.getSpotNumber());
             System.out.println("========================================");
-            ReceiptBackupUtility.generateCheckInReceipt(newTicket, String.valueOf(newTicket.getDailyTicketSeq()), availableSpot.getFloorNumber(), availableSpot.getSpotNumber());
-                   
+            ReceiptBackupUtility.generateCheckInReceipt(newTicket, String.valueOf(newTicket.getDailyTicketSeq()), availableSpot.getFloorNumber(), availableSpot.getSpotNumber());          
         }
     }
     
-    public void unparkVehicle(String vehicleNumber) {
-        
+    public void unparkVehicle(String vehicleNumber) {  
         try {
-            
             Ticket ticket = ticketDAO.getActiveTicketByPlate(vehicleNumber);
-            
             if (ticket == null) {
                 System.out.println("\n[ERROR] Ticket informatin not match, Kindly check it and try again.");
                 return;
             }
-
             String lockedStrategy = ticket.getPricingStrategy();
             if (lockedStrategy == null) {
                 System.out.println("[WARN] No pricing strategy locked at check-in. Defaulting to Standard Hourly Rates.");
@@ -91,7 +78,6 @@ public class ParkingService {
             } else {  
                 processingStrategy = new com.parkinglot.pricing.TimeBasedPricing();
             }
-
             String vehicleType = ticket.getVehicleType();
             double totalFee = processingStrategy.calculateFee(ticket, vehicleType);
 
@@ -108,8 +94,7 @@ public class ParkingService {
 
             PaymentStrategy paymentStrategy = null;
             String cleanPaymentType = ""; 
-
-        
+            
             if (paymentChoice.equals("1")) {
                 paymentStrategy = new CashPayment();
                 cleanPaymentType = "CASH";
@@ -123,17 +108,13 @@ public class ParkingService {
 
             boolean paymentSuccess = paymentStrategy.processPayment(totalFee);
             if (paymentSuccess) {
-                
                 ticketDAO.closeTicket(ticket.getTicketId(), totalFee, cleanPaymentType);
-    
                 spotDAO.updateSpotStatus(ticket.getParkingSpotId(), true);
                 String rateTypeName = ticket.getPricingStrategy();
                 String rawClassName = paymentStrategy.getClass().getSimpleName();
                 String paymentModeName = formatPaymentMode(rawClassName);
                 String sequenceStr = String.valueOf(ticket.getDailyTicketSeq());
-
                 String formattedEntryTime = com.parkinglot.util.ReceiptBackupUtility.getCustomFormatter().format(ticket.getEntryTime());
-
                 System.out.println("\n========================================");
                 System.out.println("          VEHICLE CHECK-OUT             ");
                 System.out.println("========================================");
@@ -143,7 +124,6 @@ public class ParkingService {
                 System.out.println(" Rate Type    : " + rateTypeName);
                 System.out.printf(" Settled Cost : Rs.%.2f via %s\n", totalFee, paymentModeName);
                 System.out.println("========================================");
-
                 ReceiptBackupUtility.saveReceiptToFile(ticket, sequenceStr, rateTypeName, totalFee, paymentModeName);
                 ReceiptBackupUtility.generateCustomerReceipt(ticket, sequenceStr, rateTypeName, totalFee, paymentModeName);
             }
