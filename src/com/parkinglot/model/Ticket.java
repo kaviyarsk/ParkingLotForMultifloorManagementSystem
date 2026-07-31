@@ -11,7 +11,6 @@ public class Ticket {
     private Timestamp exitTime;
     private double amountPaid;
     private String pricingStrategy;
-
     private int floorNumber;
     private int spotNumber;
     private String vehicleType;
